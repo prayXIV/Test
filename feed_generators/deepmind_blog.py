@@ -78,6 +78,19 @@ def generate_feed():
             
             title = title_elem.get_text(strip=True) if title_elem else "Untitled"
             
+            # Clean title - remove dates that might have been included
+            # Remove date patterns at the beginning (e.g., "10 March 2025TITLE" or "10 March 2025 TITLE")
+            title = re.sub(r'^\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\s*', '', title, flags=re.I)
+            title = re.sub(r'^\d{1,2}\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{4}\s*', '', title, flags=re.I)
+            # Remove date patterns at the end
+            title = re.sub(r'\s*\d{4}-\d{2}-\d{2}\s*$', '', title)  # YYYY-MM-DD at end
+            title = re.sub(r'\s*\d{1,2}/\d{1,2}/\d{4}\s*$', '', title)  # MM/DD/YYYY at end
+            title = re.sub(r'\s*\(\d{4}\)\s*$', '', title)  # (YYYY) at end
+            title = re.sub(r'\s*-\s*\d{4}\s*$', '', title)  # - YYYY at end
+            # Clean up extra spaces and separators
+            title = re.sub(r'\s+', ' ', title).strip()  # Clean up extra spaces
+            title = title.strip(' -–—')  # Remove trailing separators
+            
             # Extract description
             desc_elem = article.find(['p', 'div'], class_=re.compile(r'description|excerpt|summary', re.I))
             description = desc_elem.get_text(strip=True) if desc_elem else ""
